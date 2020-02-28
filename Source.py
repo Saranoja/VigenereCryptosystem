@@ -174,18 +174,22 @@ def main():
     file.write("\nMost likely length of the key:\n")
     file.write(str(getKeyLength(encText, 10)))
     file.write("\nCaesar code (should be read by columns rather than lines):\n")
-    # for i in range(0, getKeyLength(encText, 10)):
-    # translateBack(extract(encText, i, getKeyLength(encText, 10)))
-    # file.write('\n')
     temp = extract(encText, 0, 8)
     temp = translateBack(temp)
     file.write(temp)
     file.write("\n")
+    finalText = ["x"] * len(encText)
     for i in range(1, getKeyLength(encText, 10)):
         temp = extract(encText, i, 8)
         temp = translateBack(temp)
+        #for j in range(0, len(temp)):
+            #finalText[i] = temp[j]
+            #i += getKeyLength(encText, 10)
         file.write(temp)
         file.write("\n")
+    #file.write("Reconstructed text:\n")
+    #finalText = listToString(finalText)
+    #file.write(finalText)
     file.close()
 
 
