@@ -12,7 +12,9 @@ keyFile = open("key.txt", "r+")
 plainText = data.read()
 data.seek(len(plainText))
 key = keyFile.read()
-englishFrequencies = 'etaoinshrdlcumwfgypbvkjxqz'
+englishFrequencies = [8.04, 1.5, 3.34, 3.79, 12.5, 2.2, 2, 5, 7.6, 0.15, 0.75, 4, 2.5, 7.23, 8, 2, 0.1, 6.196, 6.5, 9,
+                      2.73, 1, 1.65, 0.15, 2, 0.074];
+numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]
 
 
 def filter(originalText):
@@ -122,20 +124,41 @@ def getKeyLength(text, seek):
     return length
 
 
-def translateBack(sequence):
+def shift(text, number):
+    visited = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    for index in range(0, len(text)):
+        if visited[getOrd(text[index])] == 0:
+            text = text.replace(text[index], alphabet[getOrd(text[index]) - number])
+            visited[getOrd(text[index])] = 1
+    return text
+
+
+def getMaxRatio(sequence):
     occurs = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     newSequence = []
     for val in range(0, len(sequence)):
         occurs[getOrd(sequence[val])] += 1
-    for i in range(0, len(sequence)):
-        newSequence = sorted(occurs, reverse=True)
+    for k in range(0, len(englishFrequencies)):
+        newSequence.append(englishFrequencies[k] * occurs[k] / len(occurs) * 0.01)
+    occurs.clear()
+    return sum(newSequence)
+
+
+def translateBack(sequence):
+    maxTotal = 0
     sequence = listToString(sequence)
-    for j in range(0, len(occurs)):
-        for k in range(0, len(englishFrequencies)):
-            if occurs[j] == newSequence[k]:
-                sequence = sequence.replace(getLetter(j), englishFrequencies[k])
-    file.write(sequence)
-    return sequence
+    copy = sequence
+    index = 0
+    for i in range(0, 25):
+        if maxTotal < getMaxRatio(sequence):
+            maxTotal = getMaxRatio(sequence)
+            sequence = shift(sequence, 1)
+            index = i
+        else:
+            sequence = shift(sequence, 1)
+    print(maxTotal)
+    print(index)
+    return shift(copy, index)
 
 
 def main():
@@ -151,9 +174,18 @@ def main():
     file.write("\nMost likely length of the key:\n")
     file.write(str(getKeyLength(encText, 10)))
     file.write("\nCaesar code (should be read by columns rather than lines):\n")
-    for i in range(0, getKeyLength(encText, 10)):
-        translateBack(extract(encText, i, getKeyLength(encText, 10)))
-        file.write('\n')
+    # for i in range(0, getKeyLength(encText, 10)):
+    # translateBack(extract(encText, i, getKeyLength(encText, 10)))
+    # file.write('\n')
+    temp = extract(encText, 0, 8)
+    temp = translateBack(temp)
+    file.write(temp)
+    file.write("\n")
+    for i in range(1, getKeyLength(encText, 10)):
+        temp = extract(encText, i, 8)
+        temp = translateBack(temp)
+        file.write(temp)
+        file.write("\n")
     file.close()
 
 
