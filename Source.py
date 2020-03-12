@@ -1,6 +1,6 @@
-# Encyrption using Vigenere cryptosystem.
-# The cryptanalylsis is based exclusively on probabilities, therefore human intervention is required for a more accurate interpretation.
-# Key length computed using the index of coincidence (still, probabilistic).
+# Encyrption using Vigenere cryptosystem. Works on repetitive keys as well
+# The cryptanalylsis is based exclusively on chi-cipher.
+# Key length computed using the index of coincidence.
 import sys
 import string
 
@@ -133,6 +133,38 @@ def shift(text, number):
     return text
 
 
+def statisticsubstring(s):
+    s = s.lower()
+    englFreq = [
+        0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015,
+        0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749,
+        0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758,
+        0.00978, 0.02360, 0.00150, 0.01974, 0.00074]
+    expected = {}
+    for each in set(s):
+        q = ord(each) - 97
+        expected[each] = englFreq[q] * len(s)
+    chiSquared = sum(((s.count(a) - expected[a]) ** 2) / expected[a] for a in set(s))
+    return chiSquared
+
+
+def getKey(c, keyl):
+    temp = ""
+    for l in range(keyl):
+        s = ""
+        for i in range(l, len(c), keyl):
+            s += c[i]
+        occurs = []
+        for i in range(26):
+            occurs.append("".join([chr(((ord(each) - 97 - i) % 26) + 97) for each in s]).upper())
+        stats = []
+        for i in range(len(occurs)):
+            stats.append(statisticsubstring(occurs[i]))
+        k = chr(stats.index(min(stats)) + 97)
+        temp += k
+    return temp
+
+
 def getMaxRatio(sequence):
     occurs = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     newSequence = []
@@ -156,8 +188,9 @@ def translateBack(sequence):
             index = i
         else:
             sequence = shift(sequence, 1)
-    print(maxTotal)
-    print(index)
+    # print(maxTotal)
+    # print(index)
+    # print(getLetter(index))
     return shift(copy, index)
 
 
@@ -169,28 +202,16 @@ def main():
     encText = formatEnc(encrypt(trText, trKey))
     file.write("\nEncrypted text:\n")
     file.write(listToString(encText))
+    file.write("\nLength of the key:\n")
+    file.write(str(getKeyLength(encText, 10)))
     file.write("\nDecrypted text:\n")
     file.write(listToString(decrypt(encrypt(trText, trKey), trKey)))
-    file.write("\nMost likely length of the key:\n")
-    file.write(str(getKeyLength(encText, 10)))
-    file.write("\nCaesar code (should be read by columns rather than lines):\n")
-    temp = extract(encText, 0, 8)
-    temp = translateBack(temp)
-    file.write(temp)
     file.write("\n")
-    finalText = ["x"] * len(encText)
-    for i in range(1, getKeyLength(encText, 10)):
-        temp = extract(encText, i, 8)
-        temp = translateBack(temp)
-        #for j in range(0, len(temp)):
-            #finalText[i] = temp[j]
-            #i += getKeyLength(encText, 10)
-        file.write(temp)
-        file.write("\n")
-    #file.write("Reconstructed text:\n")
-    #finalText = listToString(finalText)
-    #file.write(finalText)
+    file.write("Key:")
+    file.write(getKey(encText, getKeyLength(encText, 10)))
+    # file.write("Reconstructed text:\n")
+    # finalText = listToString(finalText)
+    # file.write(finalText)
     file.close()
-
 
 main()
