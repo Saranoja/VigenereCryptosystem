@@ -1,5 +1,5 @@
 # Encyrption using Vigenere cryptosystem. Works on repetitive keys as well
-# The cryptanalylsis is based exclusively on chi-cipher.
+# The cryptanalylsis is based exclusively on chi-squared stats.
 # Key length computed using the index of coincidence.
 import sys
 import string
